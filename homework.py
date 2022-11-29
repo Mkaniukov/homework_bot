@@ -53,7 +53,7 @@ def check_tokens():
 
 
 def send_message(bot, message):
-    """Отправляет сообщение в Telegram чат"""
+    """Отправляет сообщение в Telegram чат."""
     try:
         bot.send_message(chat_id=TELEGRAM_CHAT_ID, text=message)
     except Exception:
@@ -64,7 +64,7 @@ def send_message(bot, message):
 
 
 def get_api_answer(timestamp):
-    """Делает запрос к единственному эндпоинту API"""
+    """Делает запрос к единственному эндпоинту API."""
     params = {'from_date': timestamp}
     try:
         response = requests.get(ENDPOINT, headers=HEADERS, params=params)
@@ -79,7 +79,7 @@ def get_api_answer(timestamp):
 
 
 def check_response(response):
-    """Проверяем ответ API на соответствие документации"""
+    """Проверяем ответ API на соответствие документации."""
     if isinstance(response, dict):
         if 'homeworks' in response:
             if isinstance(response.get('homeworks'), list):
