@@ -38,7 +38,7 @@ HOMEWORK_VERDICTS = {
 
 
 def check_tokens():
-    """Проверяет доступность переменных окружения"""
+    """Проверяет доступность переменных окружения."""
     tokens = {
         'practicum_token': PRACTICUM_TOKEN,
         'telegram_token': TELEGRAM_TOKEN,
