@@ -6,29 +6,7 @@ import time
 import requests
 from dotenv import load_dotenv
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 load_dotenv()
-
 
 logger = logging.getLogger(__name__)
 
@@ -37,11 +15,6 @@ logging.basicConfig(
     filename='program.log',
     format='%(asctime)s, %(levelname)s, %(message)s, %(name)s'
 )
-logging.debug('123')  # Когда нужна отладочная информация
-logging.info('Сообщение отправлено')  # Когда нужна дополнительная информация
-logging.warning('Большая нагрузка!')  # Когда что-то идёт не так, но работает
-logging.error('Бот не смог отправить сообщение')  # Когда что-то сломалось
-logging.critical('Всё упало! Зовите админа!1!111')  # Когда всё совсем плохо
 
 PRACTICUM_TOKEN = os.getenv('PRACTICUM_TOKEN')
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
@@ -95,7 +68,6 @@ def get_api_answer(timestamp):
         return response.json()
     except requests.exceptions.RequestException:
         message = f'Ошибка при запросе к API: {response.status_code}'
-        logging.error(message)
         raise requests.exceptions.RequestException(message)
 
 
@@ -112,22 +84,19 @@ def check_response(response):
 
 def parse_status(homework):
     """Проверка статуса домашней работы."""
-    if isinstance(homework, dict):
-        if 'status' in homework:
-            if 'homework_name' in homework:
-                if isinstance(homework.get('status'), str):
-                    homework_name = homework.get('homework_name')
-                    homework_status = homework.get('status')
-                    if homework_status in HOMEWORK_VERDICTS:
-                        verdict = HOMEWORK_VERDICTS.get(homework_status)
-                        return ('Изменился статус проверки работы '
-                                f'"{homework_name}". {verdict}')
-                    else:
-                        raise Exception("Неизвестный статус работы")
-                raise TypeError('status не str.')
-            raise KeyError('В ответе нет ключа homework_name.')
-        raise KeyError('В ответе нет ключа status.')
-    raise KeyError('API возвращает не словарь.')
+    status = homework.get('status')
+    if status is None:
+        raise TypeError
+    if status not in HOMEWORK_VERDICTS:
+        raise TypeError
+    homework_name = homework.get('homework_name')
+    if homework_name is None:
+        raise TypeError
+    verdict = HOMEWORK_VERDICTS.get(status)
+    if verdict is None:
+        logging.error(f'Неизвестный статус работы')
+        return None
+    return f'Изменился статус проверки работы "{homework_name}". {verdict}'
 
 
 def main():
@@ -154,6 +123,8 @@ def main():
             except Exception as error:
                 message = f'Сбой в работе программы: {error}'
                 send_message(bot, message)
+                logging.error(message)
+            finally:
                 time.sleep(RETRY_PERIOD)
 
 
