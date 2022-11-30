@@ -94,9 +94,9 @@ def parse_status(homework):
         raise TypeError
     verdict = HOMEWORK_VERDICTS.get(status)
     if verdict is None:
-        logging.error(f'Неизвестный статус работы')
+        logging.error('Неизвестный статус работы')
         return None
-    return ('Изменился статус проверки работы ' 
+    return ('Изменился статус проверки работы '
             f'"{homework_name}". {verdict}')
 
 
