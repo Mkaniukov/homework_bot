@@ -5,6 +5,7 @@ import telegram
 import time
 import requests
 from dotenv import load_dotenv
+import sys
 
 load_dotenv()
 
@@ -73,29 +74,28 @@ def get_api_answer(timestamp):
 
 def check_response(response):
     """Проверяем ответ API на соответствие документации."""
-    if isinstance(response, dict):
-        if 'homeworks' in response:
-            if isinstance(response.get('homeworks'), list):
-                return response.get('homeworks')
-            raise TypeError('API возвращает не список.')
-        raise KeyError('Не найден ключ homeworks.')
-    raise TypeError('API возвращает не словарь.')
+    if not isinstance(response, dict):
+        raise TypeError('API возвращает не словарь.')
+    if not isinstance(response.get('homeworks'), list):
+        raise TypeError('API возвращает не список.')
+    return response.get('homeworks')
 
 
 def parse_status(homework):
     """Проверка статуса домашней работы."""
+    if not isinstance(homework, dict):
+        raise TypeError('homework не словарь')
     status = homework.get('status')
     if status is None:
-        raise TypeError
+        raise TypeError('Статус пуст')
     if status not in HOMEWORK_VERDICTS:
-        raise TypeError
+        raise TypeError('Неизвестный статус')
     homework_name = homework.get('homework_name')
     if homework_name is None:
-        raise TypeError
+        raise TypeError('Неизвестное имя работы')
     verdict = HOMEWORK_VERDICTS.get(status)
     if verdict is None:
-        logging.error('Неизвестный статус работы')
-        return None
+        return TypeError('Неизвестный статус')
     return ('Изменился статус проверки работы '
             f'"{homework_name}". {verdict}')
 
@@ -103,7 +103,8 @@ def parse_status(homework):
 def main():
     """Основная логика работы бота."""
     logging.info('Бот запущен')
-    if check_tokens():
+    if not check_tokens():
+        raise sys.exit()
         bot = telegram.Bot(token=TELEGRAM_TOKEN)
         timestamp = int(time.time())
         while True:
@@ -119,8 +120,7 @@ def main():
                     """Дата последнего обновления."""
                     timestamp = response_result['current_date']
                 else:
-                    logging.info("Новые задания не обнаружены")
-                time.sleep(RETRY_PERIOD)
+                    logging.DEBUG("Новые задания не обнаружены")
             except Exception as error:
                 message = f'Сбой в работе программы: {error}'
                 send_message(bot, message)
