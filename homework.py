@@ -1,11 +1,12 @@
-from http import HTTPStatus
 import logging
 import os
-import telegram
-import time
-import requests
-from dotenv import load_dotenv
 import sys
+import time
+
+import requests
+import telegram
+from dotenv import load_dotenv
+from http import HTTPStatus
 
 load_dotenv()
 
@@ -104,29 +105,30 @@ def main():
     """Основная логика работы бота."""
     logging.info('Бот запущен')
     if not check_tokens():
-        raise sys.exit()
-        bot = telegram.Bot(token=TELEGRAM_TOKEN)
-        timestamp = int(time.time())
-        while True:
-            try:
-                """Запрос к API."""
-                response_result = get_api_answer(timestamp)
-                """Проверка ответа."""
-                homeworks = check_response(response_result)
-                logging.info("Список домашних работ получен")
-                """Если есть обновления, то отправить сообщение в Telegram."""
-                if len(homeworks) > 0:
-                    send_message(bot, parse_status(homeworks[0]))
-                    """Дата последнего обновления."""
-                    timestamp = response_result['current_date']
-                else:
-                    logging.DEBUG("Новые задания не обнаружены")
-            except Exception as error:
-                message = f'Сбой в работе программы: {error}'
-                send_message(bot, message)
-                logging.error(message)
-            finally:
-                time.sleep(RETRY_PERIOD)
+        sys.exit('Нет переменных, программа завершена')
+    bot = telegram.Bot(token=TELEGRAM_TOKEN)
+    timestamp = int(time.time())
+    while True:
+        try:
+            """Запрос к API."""
+            response_result = get_api_answer(timestamp)
+            """Проверка ответа."""
+            homeworks = check_response(response_result)
+            logging.info("Список домашних работ получен")
+            """Если есть обновления, то отправить сообщение в Telegram."""
+            if len(homeworks) > 0:
+                send_message(bot, parse_status(homeworks[0]))
+                """Дата последнего обновления."""
+                timestamp = response_result['current_date']
+            else:
+                logging.debug("Новые задания не обнаружены")
+
+        except Exception as error:
+            message = f'Сбой в работе программы: {error}'
+            send_message(bot, message)
+            logging.error(message)
+        finally:
+            time.sleep(RETRY_PERIOD)
 
 
 if __name__ == '__main__':
